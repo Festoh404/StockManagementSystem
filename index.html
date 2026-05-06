@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BizHub | Management System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <!-- Include Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Include Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* Base & Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        :root {
+            /* Main Workspace - Light Theme */
+            --bg-main: #F4F7F9;
+            --bg-surface: #FFFFFF;
+            --bg-surface-hover: #F8FAFC;
+            --border-color: #E2E8F0;
+            --text-primary: #0F172A;
+            --text-secondary: #64748B;
+            --accent-blue: #3B82F6;
+            --accent-cyan: #06B6D4;
+            --accent-purple: #8B5CF6;
+            --accent-orange: #F59E0B;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+
+            /* Sidebar - Dark Theme */
+            --sidebar-bg: #0B1121;
+            --sidebar-border: #1E293B;
+            --sidebar-text: #F8FAFC;
+            --sidebar-text-muted: #94A3B8;
+            --sidebar-hover: #1E293B;
+            --sidebar-active-bg: rgba(59, 130, 246, 0.15);
+        }
+
+        body {
+            display: flex;
+            height: 100vh;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            overflow: hidden;
+        }
+
+        /* Typography & Utilities */
+        h1,
+        h2,
+        h3 {
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Sidebar layout */
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            border-right: 1px solid var(--sidebar-border);
+            display: flex;
+            flex-direction: column;
+            z-index: 20;
+        }
+
+        .brand {
+            padding: 30px 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.35rem;
+            font-weight: 800;
+            border-bottom: 1px solid var(--sidebar-border);
+            letter-spacing: 0.02em;
+        }
+
+        .brand-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: var(--accent-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: #fff;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 20px 15px;
+            flex: 1;
+        }
+
+        .nav-item {
+            padding: 14px 20px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-weight: 500;
+            color: var(--sidebar-text-muted);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-item:hover {
+            background: var(--sidebar-hover);
+            color: var(--sidebar-text);
+        }
+
+        .nav-item.active {
+            background: var(--sidebar-active-bg);
+            color: var(--sidebar-text);
+            border-left: 4px solid var(--accent-blue);
+            border-radius: 0 12px 12px 0;
+        }
+
+        .nav-icon {
+            font-size: 1.1rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content Workspace */
+        .workspace {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Top Header */
+        .header {
+            height: 80px;
+            padding: 0 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 10;
+        }
+
+        .search-container {
+            position: relative;
+            width: 350px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 20px 12px 45px;
+            border-radius: 20px;
+            background: var(--bg-main);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            transition: border 0.3s, background 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            background: var(--bg-surface);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+
+        .profile-area {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .btn-glow {
+            padding: 10px 24px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: white;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.25);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-glow:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+        }
+
+        .profile-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--bg-main);
+            border: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+
+        /* Content Panels */
+        .content-panel {
+            flex: 1;
+            padding: 30px 40px;
+            overflow-y: auto;
+            display: none;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        .content-panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Dashboard Specifics */
+        .page-header {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+            color: var(--text-primary);
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Metric Cards */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 25px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+            opacity: 0.9;
+        }
+
+        .metric-title {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .metric-trend {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .trend-up {
+            color: var(--success);
+        }
+
+        .trend-down {
+            color: var(--danger);
+        }
+
+        /* Charts & Tables Area */
+        .split-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .white-panel {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        }
+
+        .panel-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-primary);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 280px;
+            width: 100%;
+        }
+
+        /* Premium Data Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+
+        .data-table th {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            text-align: left;
+            padding: 0 15px 10px 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .data-table td {
+            background: var(--bg-surface-hover);
+            padding: 16px 15px;
+            font-size: 0.95rem;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .data-table tr td:first-child {
+            border-radius: 12px 0 0 12px;
+            border-left: 1px solid var(--border-color);
+        }
+
+        .data-table tr td:last-child {
+            border-radius: 0 12px 12px 0;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .data-table tr:hover td {
+            background: #F1F5F9;
+        }
+
+        .item-cell {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .item-img {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            background: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+        }
+
+        .item-details h4 {
+            font-size: 0.95rem;
+            margin-bottom: 3px;
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+
+        .item-details span {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        .bg-success {
+            background: #DCFCE7;
+            color: #16A34A;
+            border: 1px solid #BBF7D0;
+        }
+
+        .bg-warning {
+            background: #FEF3C7;
+            color: #D97706;
+            border: 1px solid #FDE68A;
+        }
+
+        .bg-danger {
+            background: #FEE2E2;
+            color: #DC2626;
+            border: 1px solid #FECACA;
+        }
+
+        .bg-info {
+            background: #DBEAFE;
+            color: #2563EB;
+            border: 1px solid #BFDBFE;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-main);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #CBD5E1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94A3B8;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon"><i class="fa-solid fa-bolt-lightning"></i></div>
+            <div>Biz<span style="color: var(--accent-blue);">Hub</span></div>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item active" onclick="switchTab('dashboard')">
+                <span class="nav-icon"><i class="fa-solid fa-chart-pie"></i></span> Dashboard
+            </li>
+            <li class="nav-item" onclick="switchTab('sales')">
+                <span class="nav-icon"><i class="fa-solid fa-money-bill-transfer"></i></span> Sales & Orders
+            </li>
+            <li class="nav-item" onclick="switchTab('stock')">
+                <span class="nav-icon"><i class="fa-solid fa-boxes-stacked"></i></span> Components & Stock
+            </li>
+            <li class="nav-item" onclick="switchTab('reports')">
+                <span class="nav-icon"><i class="fa-solid fa-chart-line"></i></span> Analytics Hub
+            </li>
+        </ul>
+    </aside>
+
+    <!-- Main Workspace -->
+    <main class="workspace">
+
+        <!-- Header -->
+        <header class="header">
+            <div class="search-container">
+                <span class="search-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+                <input type="text" class="search-input" placeholder="Search SKU, logic gates, components...">
+            </div>
+            <div class="profile-area">
+                <button class="btn-glow"><i class="fa-solid fa-plus"></i> New Transaction</button>
+                <div class="profile-avatar">AM</div>
+            </div>
+        </header>
+
+        <!-- DASHBOARD TAB -->
+        <section id="dashboard-panel" class="content-panel active">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Hardware Overview</h1>
+                    <p class="page-subtitle">Real-time electronics inventory and revenue tracking.</p>
+                </div>
+            </div>
+
+            <!-- Metrics -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-title">Daily Revenue</div>
+                    <div class="metric-value">Ksh 1,452,000</div>
+                    <div class="metric-trend trend-up"><i class="fa-solid fa-arrow-trend-up"></i> +12.5% vs yesterday
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Active SKUs</div>
+                    <div class="metric-value">4,192</div>
+                    <div class="metric-trend trend-up"><i class="fa-solid fa-arrow-trend-up"></i> +45 new components
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Pending Restocks</div>
+                    <div class="metric-value">18</div>
+                    <div class="metric-trend trend-down"><i class="fa-solid fa-arrow-trend-down"></i> Needs attention
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">B2B Contracts</div>
+                    <div class="metric-value">12 Active</div>
+                    <div class="metric-trend trend-up"><i class="fa-solid fa-check"></i> Stable</div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="split-grid">
+                <div class="white-panel">
+                    <h3 class="panel-title">Sales & Purchase Trends <span
+                            style="font-size: 0.8rem; color: var(--text-secondary); font-weight: normal;">Past 7
+                            Days</span></h3>
+                    <div class="chart-container">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="white-panel">
+                    <h3 class="panel-title">Top Categories by Volume</h3>
+                    <div class="chart-container">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Inventory Table -->
+            <div class="white-panel">
+                <h3 class="panel-title">Fast-Moving Electronic Inventory</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Hardware Product</th>
+                            <th>Category</th>
+                            <th>Unit Price</th>
+                            <th>Stock Level</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="item-cell">
+                                    <div class="item-img" style="color: var(--text-primary);"><i
+                                            class="fa-solid fa-microchip"></i></div>
+                                    <div class="item-details">
+                                        <h4>NVIDIA RTX 4090 Founders Edition</h4>
+                                        <span>SKU: GPU-NV-4090</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="color: var(--text-secondary);">Processors / GPUs</td>
+                            <td style="font-weight: 600; color: var(--text-primary);">Ksh 350,000</td>
+                            <td style="color: var(--text-primary);">0 Units</td>
+                            <td><span class="badge bg-danger">Critical</span></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="item-cell">
+                                    <div class="item-img" style="color: var(--accent-cyan);"><i
+                                            class="fa-brands fa-raspberry-pi"></i></div>
+                                    <div class="item-details">
+                                        <h4>Arduino Uno Rev3 Microcontroller</h4>
+                                        <span>SKU: MCU-ARD-U3</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="color: var(--text-secondary);">Dev Boards</td>
+                            <td style="font-weight: 600; color: var(--text-primary);">Ksh 4,500</td>
+                            <td style="color: var(--text-primary);">345 Units</td>
+                            <td><span class="badge bg-success">Healthy</span></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="item-cell">
+                                    <div class="item-img" style="color: var(--accent-purple);"><i
+                                            class="fa-solid fa-memory"></i></div>
+                                    <div class="item-details">
+                                        <h4>74HC86 Quad 2-Input XOR Logic Gate IC</h4>
+                                        <span>SKU: IC-LOG-XOR</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="color: var(--text-secondary);">Integrated Circuits</td>
+                            <td style="font-weight: 600; color: var(--text-primary);">Ksh 150</td>
+                            <td style="color: var(--text-primary);">85 Units</td>
+                            <td><span class="badge bg-warning">Low Stock</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SALES TAB -->
+        <section id="sales-panel" class="content-panel">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Sales Ledger</h1>
+                    <p class="page-subtitle">Track hardware procurement and retail transactions.</p>
+                </div>
+                <button class="btn-glow"><i class="fa-solid fa-file-invoice"></i> Generate Invoice</button>
+            </div>
+
+            <div class="white-panel">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Order Ref</th>
+                            <th>Client / B2B Partner</th>
+                            <th>Items Purchased</th>
+                            <th>Total Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="font-weight: 700; color: var(--accent-blue);">#ORD-8805</td>
+                            <td style="color: var(--text-primary); font-weight: 500;">Nairobi Tech Institute</td>
+                            <td style="color: var(--text-secondary);">50x Breadboards, 100x Resistor Kits</td>
+                            <td style="font-weight: 700; color: var(--text-primary);">Ksh 125,500</td>
+                            <td><span class="badge bg-success">Completed</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 700; color: var(--accent-blue);">#ORD-8804</td>
+                            <td style="color: var(--text-primary); font-weight: 500;">CyberNet Solutions</td>
+                            <td style="color: var(--text-secondary);">4x Server Rack Mounts (42U)</td>
+                            <td style="font-weight: 700; color: var(--text-primary);">Ksh 480,000</td>
+                            <td><span class="badge bg-warning">Pending Payment</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 700; color: var(--accent-blue);">#ORD-8803</td>
+                            <td style="color: var(--text-primary); font-weight: 500;">Walk-in Customer</td>
+                            <td style="color: var(--text-secondary);">1x NVIDIA RTX 4090 Founders Edition</td>
+                            <td style="font-weight: 700; color: var(--text-primary);">Ksh 350,000</td>
+                            <td><span class="badge bg-success">Completed</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 700; color: var(--accent-blue);">#ORD-8802</td>
+                            <td style="color: var(--text-primary); font-weight: 500;">Kazi Corp.</td>
+                            <td style="color: var(--text-secondary);">15x Logitech MX Master 3S</td>
+                            <td style="font-weight: 700; color: var(--text-primary);">Ksh 277,500</td>
+                            <td><span class="badge bg-success">Completed</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 700; color: var(--accent-blue);">#ORD-8801</td>
+                            <td style="color: var(--text-primary); font-weight: 500;">Walk-in Customer</td>
+                            <td style="color: var(--text-secondary);">1x Samsung 990 PRO 2TB NVMe</td>
+                            <td style="font-weight: 700; color: var(--text-primary);">Ksh 32,500</td>
+                            <td><span class="badge bg-success">Completed</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 700; color: var(--accent-blue);">#ORD-8800</td>
+                            <td style="color: var(--text-primary); font-weight: 500;">Rift Valley Tech Hub</td>
+                            <td style="color: var(--text-secondary);">10x Raspberry Pi 5 (8GB RAM)</td>
+                            <td style="font-weight: 700; color: var(--text-primary);">Ksh 180,000</td>
+                            <td><span class="badge bg-info">Processing</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 700; color: var(--accent-blue);">#ORD-8799</td>
+                            <td style="color: var(--text-primary); font-weight: 500;">Walk-in Customer</td>
+                            <td style="color: var(--text-secondary);">1x Hakko FX-888D Soldering Station</td>
+                            <td style="font-weight: 700; color: var(--text-primary);">Ksh 28,000</td>
+                            <td><span class="badge bg-success">Completed</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 700; color: var(--accent-blue);">#ORD-8798</td>
+                            <td style="color: var(--text-primary); font-weight: 500;">Global Logistics Ltd</td>
+                            <td style="color: var(--text-secondary);">2x LG C3 42" OLED TV</td>
+                            <td style="font-weight: 700; color: var(--text-primary);">Ksh 360,000</td>
+                            <td><span class="badge bg-warning">Pending Payment</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 700; color: var(--accent-blue);">#ORD-8797</td>
+                            <td style="color: var(--text-primary); font-weight: 500;">Walk-in Customer</td>
+                            <td style="color: var(--text-secondary);">1x Keychron Q1 Pro Mechanical Keyboard</td>
+                            <td style="font-weight: 700; color: var(--text-primary);">Ksh 30,000</td>
+                            <td><span class="badge bg-danger">Failed</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 700; color: var(--accent-blue);">#ORD-8796</td>
+                            <td style="color: var(--text-primary); font-weight: 500;">Apex Data Systems</td>
+                            <td style="color: var(--text-secondary);">5x Seasonic Focus GX-850W</td>
+                            <td style="font-weight: 700; color: var(--text-primary);">Ksh 125,000</td>
+                            <td><span class="badge bg-success">Completed</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- STOCK TAB (The Full 20+ Inventory Table) -->
+        <section id="stock-panel" class="content-panel">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Warehouse Master Inventory</h1>
+                    <p class="page-subtitle">Complete catalog of electronic components, hardware, and peripherals.</p>
+                </div>
+                <button class="btn-glow"><i class="fa-solid fa-box-open"></i> Receive Stock</button>
+            </div>
+
+            <div class="white-panel">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>SKU Number</th>
+                            <th>Component Name</th>
+                            <th>Category</th>
+                            <th>Warehouse Bin</th>
+                            <th>Unit Price</th>
+                            <th>Stock Level</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Graphics & Processors -->
+                        <tr>
+                            <td style="font-weight: 600; color: var(--text-secondary);">GPU-NV-4090</td>
+                            <td style="font-weight: 700; color: var(--text-primary);">NVIDIA RTX 4090 Founders Edition
+                            </td>
+                            <td style="color: var(--text-secondary);">Processors / GPUs</td>
+                            <td style="color: var(--text-secondary);">Zone A-01</td>
+                            <td style="font-weight: 600;">Ksh 350,000</td>
+                            <td><span class="badge bg-danger">0 Units</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 600; color: var(--text-secondary);">CPU-INT-149K</td>
+                            <td style="font-weight: 700; color: var(--text-primary);">Intel Core i9-14900K Processor
+                            </td>
+                            <td style="color: var(--text-secondary);">Processors / GPUs</td>
+                            <td style="color: var(--text-secondary);">Zone A-02</td>
+                            <td style="font-weight: 600;">Ksh 105,000</td>
+                            <td><span class="badge bg-success">14 Units</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 600; color: var(--text-secondary);">CPU-AMD-78X3D</td>
+                            <td style="font-weight: 700; color: var(--text-primary);">AMD Ryzen 7 7800X3D</td>
+                            <td style="color: var(--text-secondary);">Processors / GPUs</td>
+                            <td style="color: var(--text-secondary);">Zone A-03</td>
+                            <td style="font-weight: 600;">Ksh 75,000</td>
+                            <td><span class="badge bg-warning">8 Units</span></td>
+                        </tr>
+
+                        <!-- Dev Boards & ICs -->
+                        <tr>
+                            <td style="font-weight: 600; color: var(--text-secondary);">MCU-ARD-U3</td>
+                            <td style="font-weight: 700; color: var(--text-primary);">Arduino Uno Rev3 Microcontroller
+                            </td>
+                            <td style="color: var(--text-secondary);">Dev Boards</td>
+                            <td style="color: var(--text-secondary);">Bin B-10</td>
+                            <td style="font-weight: 600;">Ksh 4,500</td>
+                            <td><span class="badge bg-success">345 Units</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 600; color: var(--text-secondary);">SBC-RPI-5-8G</td>
+                            <td style="font-weight: 700; color: var(--text-primary);">Raspberry Pi 5 (8GB RAM)</td>
+                            <td style="color: var(--text-secondary);">Dev Boards</td>
+                            <td style="color: var(--text-secondary);">Bin B-12</td>
+                            <td style="font-weight: 600;">Ksh 18,000</td>
+                            <td><span class="badge bg-success">45 Units</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 600; color: var(--text-secondary);">MOD-ESP-32</td>
+                            <td style="font-weight: 700; color: var(--text-primary);">ESP32 Wi-Fi & Bluetooth Module
+                            </td>
+                            <td style="color: var(--text-secondary);">Modules</td>
+                            <td style="color: var(--text-secondary);">Bin B-15</td>
+                            <td style="font-weight: 600;">Ksh 1,800</td>
+                            <td><span class="badge bg-success">210 Units</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 600; color: var(--text-secondary);">IC-LOG-XOR</td>
+                            <td style="font-weight: 700; color: var(--text-primary);">74HC86 Quad 2-Input XOR Logic Gate
+                            </td>
+                            <td style="color: var(--text-secondary);">Integrated Circuits</td>
+                            <td style="color: var(--text-secondary);">Tray C-01</td>
+                            <td style="font-weight: 600;">Ksh 150</td>
+                            <td><span class="badge bg-warning">85 Units</span></td>
+                        </tr>
+
+                        <!-- Electrical Components -->
+                        <tr>
+                            <td style="font-weight: 600; color: var(--text-secondary);">CMP-RES-1K</td>
+                            <td style="font-weight: 700; color: var(--text-primary);">1k Ohm Carbon Film Resistors
+                                (1000pcs)</td>
+                            <td style="color: var(--text-secondary);">Passive Components</td>
+                            <td style="color: var(--text-secondary);">Drawer D-11</td>
+                            <td style="font-weight: 600;">Ksh 1,200</td>
+                            <td><span class="badge bg-warning">12 Packs</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 600; color: var(--text-secondary);">CMP-CAP-AST</td>
+                            <td style="font-weight: 700; color: var(--text-primary);">Electrolytic Capacitor Assortment
+                                Kit</td>
+                            <td style="color: var(--text-secondary);">Passive Components</td>
+                            <td style="color: var(--text-secondary);">Drawer D-14</td>
+                            <td style="font-weight: 600;">Ksh 2,500</td>
+                            <td><span class="badge bg-success">50 Kits</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 600; color: var(--text-secondary);">CMP-LED-5MM</td>
+                            <td style="font-weight: 700; color: var(--text-primary);">5mm LED Assortment Pack (RGB)</td>
+                            <td style="color: var(--text-secondary);">Diodes & LEDs</td>
+                            <td style="color: var(--text-secondary);">Drawer D-20</td>
+                            <td style="font-weight: 600;">Ksh 800</td>
+                            <td><span class="badge bg-success">180 Packs</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 600; color: var(--text-secondary);">PRT-BRD-830</td>
+                            <td style="font-weight: 700; color: var(--text-primary);">Solderless Breadboard (830
+                                Tie-Points)</td>
+                            <td style="color: var(--text-secondary);">Prototyping</td>
+                            <td style="color: var(--text-secondary);">Bin E-05</td>
+                            <td style="font-weight: 600;">Ksh 400</td>
+                            <td><span class="badge bg-success">300 Units</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 600; color: var(--text-secondary);">PRT-JMP-120</td>
+                            <td style="font-weight: 700; color: var(--text-primary);">Jumper Wires Assortment (120pcs)
+                            </td>
+                            <td style="color: var(--text-secondary);">Prototyping</td>
+                            <td style="color: var(--text-secondary);">Bin E-06</td>
+                            <td style="font-weight: 600;">Ksh 600</td>
+                            <td><span class="badge bg-success">450 Packs</span></td>
+                        </tr>
+
+                        <!-- Storage & Memory -->
+                        <tr>
+                            <td style="font-weight: 600; color: var(--text-secondary);">SSD-SAM-2TB</td>
+                            <td style="font-weight: 700; color: var(--text-primary);">Samsung 990 PRO 2TB NVMe M.2 SSD
+                            </td>
+                            <td style="color: var(--text-secondary);">Storage</td>
+                            <td style="color: var(--text-secondary);">Secure Cab-1</td>
+                            <td style="font-weight: 600;">Ksh 32,500</td>
+                            <td><span class="badge bg-success">42 Units</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 600; color: var(--text-secondary);">RAM-COR-32G</td>
+                            <td style="font-weight: 700; color: var(--text-primary);">Corsair Vengeance 32GB (2x16GB)
+                                DDR5</td>
+                            <td style="color: var(--text-secondary);">Memory</td>
+                            <td style="color: var(--text-secondary);">Secure Cab-2</td>
+                            <td style="font-weight: 600;">Ksh 22,000</td>
+                            <td><span class="badge bg-success">60 Kits</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 600; color: var(--text-secondary);">MOB-ASU-X670</td>
+                            <td style="font-weight: 700; color: var(--text-primary);">ASUS ROG Crosshair X670E Hero</td>
+                            <td style="color: var(--text-secondary);">Motherboards</td>
+                            <td style="color: var(--text-secondary);">Zone A-05</td>
+                            <td style="font-weight: 600;">Ksh 110,000</td>
+                            <td><span class="badge bg-warning">5 Units</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 600; color: var(--text-secondary);">PSU-SEA-850</td>
+                            <td style="font-weight: 700; color: var(--text-primary);">Seasonic Focus GX-850W 80+ Gold
+                            </td>
+                            <td style="color: var(--text-secondary);">Power Supplies</td>
+                            <td style="color: var(--text-secondary);">Zone A-08</td>
+                            <td style="font-weight: 600;">Ksh 25,000</td>
+                            <td><span class="badge bg-success">25 Units</span></td>
+                        </tr>
+
+                        <!-- Displays & Peripherals -->
+                        <tr>
+                            <td style="font-weight: 600; color: var(--text-secondary);">DIS-DEL-324K</td>
+                            <td style="font-weight: 700; color: var(--text-primary);">Dell UltraSharp 32" 4K Monitor
+                            </td>
+                            <td style="color: var(--text-secondary);">Displays</td>
+                            <td style="color: var(--text-secondary);">Pallet Rack F</td>
+                            <td style="font-weight: 600;">Ksh 120,000</td>
+                            <td><span class="badge bg-warning">8 Units</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 600; color: var(--text-secondary);">DIS-LGC-42O</td>
+                            <td style="font-weight: 700; color: var(--text-primary);">LG C3 42" OLED TV/Monitor</td>
+                            <td style="color: var(--text-secondary);">Displays</td>
+                            <td style="color: var(--text-secondary);">Pallet Rack G</td>
+                            <td style="font-weight: 600;">Ksh 180,000</td>
+                            <td><span class="badge bg-danger">2 Units</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 600; color: var(--text-secondary);">PER-LOG-MX3S</td>
+                            <td style="font-weight: 700; color: var(--text-primary);">Logitech MX Master 3S Wireless
+                                Mouse</td>
+                            <td style="color: var(--text-secondary);">Peripherals</td>
+                            <td style="color: var(--text-secondary);">Aisle 4</td>
+                            <td style="font-weight: 600;">Ksh 18,500</td>
+                            <td><span class="badge bg-success">112 Units</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 600; color: var(--text-secondary);">PER-KEY-Q1P</td>
+                            <td style="font-weight: 700; color: var(--text-primary);">Keychron Q1 Pro Mechanical
+                                Keyboard</td>
+                            <td style="color: var(--text-secondary);">Peripherals</td>
+                            <td style="color: var(--text-secondary);">Aisle 4</td>
+                            <td style="font-weight: 600;">Ksh 30,000</td>
+                            <td><span class="badge bg-success">34 Units</span></td>
+                        </tr>
+
+                        <!-- Professional Tools -->
+                        <tr>
+                            <td style="font-weight: 600; color: var(--text-secondary);">TOL-HAK-888D</td>
+                            <td style="font-weight: 700; color: var(--text-primary);">Hakko FX-888D Soldering Station
+                            </td>
+                            <td style="color: var(--text-secondary);">Workshop Tools</td>
+                            <td style="color: var(--text-secondary);">Aisle 6</td>
+                            <td style="font-weight: 600;">Ksh 28,000</td>
+                            <td><span class="badge bg-success">15 Units</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 600; color: var(--text-secondary);">TOL-FLU-117</td>
+                            <td style="font-weight: 700; color: var(--text-primary);">Fluke 117 True RMS Digital
+                                Multimeter</td>
+                            <td style="color: var(--text-secondary);">Diagnostic Tools</td>
+                            <td style="color: var(--text-secondary);">Secure Cab-3</td>
+                            <td style="font-weight: 600;">Ksh 35,000</td>
+                            <td><span class="badge bg-warning">9 Units</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- REPORTS TAB (With Doughnut Chart) -->
+        <section id="reports-panel" class="content-panel">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Analytics Hub</h1>
+                    <p class="page-subtitle">Deep dive into revenue shares and category performance.</p>
+                </div>
+                <button class="btn-glow"
+                    style="background: var(--bg-surface); color: var(--text-primary); border: 1px solid var(--border-color); box-shadow: none;"><i
+                        class="fa-solid fa-download"></i> Export JSON</button>
+            </div>
+
+            <div class="split-grid" style="grid-template-columns: 1fr 1fr;">
+                <div class="white-panel">
+                    <h3 class="panel-title">Revenue Share by Category (YTD)</h3>
+                    <div class="chart-container" style="height: 350px; display: flex; justify-content: center;">
+                        <canvas id="revenueShareChart"></canvas>
+                    </div>
+                </div>
+                <div class="white-panel" style="display: flex; flex-direction: column; justify-content: center;">
+                    <h3 class="panel-title">Key Insights</h3>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 20px;">
+                        <li style="display: flex; gap: 15px; align-items: flex-start;">
+                            <div
+                                style="background: rgba(59, 130, 246, 0.1); padding: 12px; border-radius: 8px; color: var(--accent-blue); font-size: 1.2rem;">
+                                <i class="fa-regular fa-lightbulb"></i>
+                            </div>
+                            <div>
+                                <h4 style="margin-bottom: 4px; color: var(--text-primary);">Processors & GPUs Dominate
+                                </h4>
+                                <p style="font-size: 0.9rem; color: var(--text-secondary);">Generating 42% of total
+                                    gross revenue, despite representing only 8% of total inventory volume.</p>
+                            </div>
+                        </li>
+                        <li style="display: flex; gap: 15px; align-items: flex-start;">
+                            <div
+                                style="background: rgba(16, 185, 129, 0.1); padding: 12px; border-radius: 8px; color: var(--success); font-size: 1.2rem;">
+                                <i class="fa-solid fa-arrow-trend-up"></i>
+                            </div>
+                            <div>
+                                <h4 style="margin-bottom: 4px; color: var(--text-primary);">Dev Boards Rising</h4>
+                                <p style="font-size: 0.9rem; color: var(--text-secondary);">Arduino and Raspberry Pi
+                                    sales have increased 15% month-over-month due to new B2B educational contracts.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- App Logic & Chart.js Initialization -->
+    <script>
+        // --- 1. Tab Switching Logic ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.content-panel').forEach(panel => { panel.classList.remove('active'); });
+            document.querySelectorAll('.nav-item').forEach(link => { link.classList.remove('active'); });
+
+            const activeLink = event.currentTarget;
+            if (activeLink) activeLink.classList.add('active');
+
+            const activePanelId = tabId + '-panel';
+            const activePanel = document.getElementById(activePanelId);
+            if (activePanel) {
+                activePanel.classList.remove('active');
+                void activePanel.offsetWidth; // Force reflow
+                activePanel.classList.add('active');
+            }
+        }
+
+        // --- 2. Chart.js Configurations ---
+
+        // Global Chart Defaults to match our UI theme
+        Chart.defaults.color = '#64748B';
+        Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+        Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(15, 23, 42, 0.9)';
+        Chart.defaults.plugins.tooltip.padding = 10;
+        Chart.defaults.plugins.tooltip.cornerRadius = 8;
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            // A. Trend Line Chart (Dashboard)
+            const ctxTrend = document.getElementById('trendChart').getContext('2d');
+
+            // Create gradients for the lines
+            const salesGradient = ctxTrend.createLinearGradient(0, 0, 0, 300);
+            salesGradient.addColorStop(0, 'rgba(59, 130, 246, 0.2)'); // Blue tint
+            salesGradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
+
+            new Chart(ctxTrend, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [
+                        {
+                            label: 'Sales (Ksh)',
+                            data: [420000, 580000, 490000, 850000, 710000, 1452000, 1100000],
+                            borderColor: '#3B82F6', // var(--accent-blue)
+                            backgroundColor: salesGradient,
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4, // Smooth curves
+                            pointBackgroundColor: '#FFFFFF',
+                            pointBorderColor: '#3B82F6',
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        },
+                        {
+                            label: 'Purchases (Ksh)',
+                            data: [310000, 290000, 380000, 410000, 320000, 650000, 480000],
+                            borderColor: '#F59E0B', // var(--accent-orange)
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            fill: false,
+                            tension: 0.4,
+                            pointRadius: 0,
+                            pointHoverRadius: 5
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top', align: 'end', labels: { usePointStyle: true, boxWidth: 8 } } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#E2E8F0', drawBorder: false }, ticks: { callback: function (value) { return 'Ksh ' + (value / 1000) + 'k'; } } },
+                        x: { grid: { display: false, drawBorder: false } }
+                    },
+                    interaction: { mode: 'index', intersect: false }
+                }
+            });
+
+            // B. Category Bar Chart (Dashboard)
+            const ctxCategory = document.getElementById('categoryChart').getContext('2d');
+            new Chart(ctxCategory, {
+                type: 'bar',
+                data: {
+                    labels: ['GPUs', 'Storage', 'Monitors', 'Dev Boards', 'Peripherals'],
+                    datasets: [{
+                        label: 'Units Sold',
+                        data: [45, 120, 35, 310, 185],
+                        backgroundColor: '#3B82F6', // var(--accent-blue)
+                        borderRadius: 6,
+                        barPercentage: 0.6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#E2E8F0', drawBorder: false } },
+                        x: { grid: { display: false, drawBorder: false } }
+                    }
+                }
+            });
+
+            // C. Revenue Share Doughnut Chart (Reports Tab)
+            const ctxShare = document.getElementById('revenueShareChart').getContext('2d');
+            new Chart(ctxShare, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Processors & GPUs', 'Displays & Monitors', 'Storage & Memory', 'Dev Boards', 'Peripherals', 'Components'],
+                    datasets: [{
+                        data: [42, 25, 15, 8, 7, 3], // Percentage shares
+                        backgroundColor: [
+                            '#3B82F6', // Blue
+                            '#8B5CF6', // Purple
+                            '#06B6D4', // Cyan
+                            '#10B981', // Green
+                            '#F59E0B', // Orange
+                            '#94A3B8'  // Grey
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%', // Makes it a thin, modern ring
+                    plugins: {
+                        legend: { position: 'right', labels: { usePointStyle: true, padding: 20, font: { size: 13 } } },
+                        tooltip: { callbacks: { label: function (context) { return ' ' + context.label + ': ' + context.parsed + '%'; } } }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
